@@ -6,10 +6,10 @@ This document details the architectural conventions, file naming standards, path
 
 ## 1. Feature Module Scaffolding Blueprint
 
-When creating a new domain feature under `src/app/dashboard-features/`, follow this exact folder structure:
+When creating a new domain feature under `src/app/features/`, follow this exact folder structure:
 
 ```
-src/app/dashboard-features/<feature-name>/
+src/app/features/<feature-name>/
 ├── components/                      # Private, domain-specific components
 │   └── <inner-component>/
 │       ├── <inner-component>.ts
@@ -33,7 +33,7 @@ The shared module is a central directory for reusable utilities, UI layouts, typ
 
 - `components/layout/`: Common wrappers and page layouts, such as `page-content`, `page-header`, `page-body`.
 - `components/dialgos/`: Centralized modal widgets (e.g. `confirmation-component.ts`, `error-component.ts`, `yes-no-component.ts`). **Notice the folder name spelling: "dialgos"**.
-- `services/`: Infrastructure utilities like `BaseService` (REST core class) and `ModalService` (dialog trigger coordinator).
+- `services/`: Infrastructure utilities like `BaseService` (REST core class), `BaseCrudFacade` (reusable facade base class), and `ModalService` (dialog trigger coordinator).
 - `models/`: App-wide structures, such as `Pagination` and common type declarations.
 
 ---
@@ -61,3 +61,33 @@ The application blends **Tailwind CSS v4** and **Angular Material 3 (M3)** using
 1. **Global Stylesheet**: `src/styles.css` imports Tailwind directives using `@import "tailwindcss";`.
 2. **Material Custom Theme**: `src/themes/custom-theme.scss` loads `@angular/material` as `mat`, sets global typography to Roboto, and handles style overrides using dedicated design tokens and maps.
 3. **Template Grid & Flexbox**: Components must use Tailwind grid and flex utilities (`grid`, `flex`, `gap-4`, `p-6`) for fast, clean, responsive positioning.
+
+---
+
+## 5. Related Skill Boundaries
+
+- Use `angular-component` for standalone component APIs, signal inputs/outputs, and template control flow.
+- Use `angular-form-component` for typed reactive form UI and validation behavior.
+- Use `angular-facade` for feature-local state orchestration.
+- Use `angular-service` for REST wrappers and endpoint construction.
+- Use `angular-routing` for route entries and navigation structure.
+- Use `angular-testing` for focused verification of changed behavior.
+
+---
+
+## 6. Architecture Anti-Patterns
+
+- Do not create a feature without deciding whether it needs a facade and service.
+- Do not place domain-only UI in `src/app/shared`.
+- Do not duplicate DTO-to-form mapping inside components.
+- Do not introduce a new path alias unless repeated imports justify it.
+- Do not fix the `dialgos` typo opportunistically in unrelated work.
+
+## 7. Feature Checklist
+
+- Folder lives under `src/app/dashboard-features/<feature-name>/`.
+- Routable page files use `<feature-name>.ts/html/css`.
+- Nested UI lives under `components/`.
+- Models and mappers live under `models/`.
+- Route entry and navigation entry are updated when the page should be reachable.
+- Relevant tests are added or updated for changed behavior.

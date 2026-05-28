@@ -216,7 +216,7 @@ Any service that performs HTTP operations should inherit from `BaseService` (loc
   protected httpClient: HttpClient = inject(HttpClient);
   ```
 - **Gotchas / Internal Quirks**:
-  - The base service uses an internal private variable named `baseUlr` (note the spelling typo `Ulr` instead of `Url`), which is exposed cleanly via the `protected get baseUrl()` getter.
+  - The base service stores its configured endpoint in `_baseUrl`, exposed cleanly through the protected `baseUrl` getter.
   - The endpoint is configured via the constructor: `super('my-endpoint')`.
 
 ### Centralized Modal Service
@@ -239,3 +239,21 @@ Interact with dialogs via `ModalService` (`@shared/services/modal-service.ts`).
   }
   ```
 - **Aesthetic Guidelines**: Custom designs must look premium, modern, and aligned with standard layout utilities (`<page-content>`, `<page-header>`, `<page-body>`). Use curated colors (such as Angular Material tokens and HSL palettes) instead of default browser styles.
+
+---
+
+## 7. Anti-Patterns
+
+- Do not use constructor parameter injection for new code.
+- Do not use `@Input()`, `@Output()`, or `EventEmitter` for new components.
+- Do not import shared code through deep relative paths; use `@shared/...`.
+- Do not put HTTP calls or multi-step RxJS orchestration directly in components.
+- Do not target generated Angular Material DOM classes from component CSS.
+
+## 8. Final Checklist
+
+- Component is standalone and all template dependencies are listed in `imports`.
+- Feature pages use default exports; nested components use named exports.
+- Templates use `@if`, `@for`, and `@switch`.
+- Shared imports use `@shared/...`; same-feature imports are relative.
+- Layout remains responsive on mobile and desktop widths.

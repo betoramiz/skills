@@ -81,5 +81,44 @@ Use semantic HTML tags and leverage standard Angular Material component forms in
 ## 3. Form Validation and Styling Guidelines
 
 - **Form States**: Ensure validation triggers are responsive. Check validation with `formGroup.controls.controlName.touched` or `formGroup.controls.controlName.dirty` before rendering errors to prevent early red markings on pristine fields.
+- **Specific Errors**: Prefer `hasError('required')`, `hasError('email')`, and custom validation keys over a generic `invalid` message when multiple failures are possible.
+- **Browser Semantics**: Use native attributes such as `type="email"`, `autocomplete="email"`, `min`, `max`, and `maxlength` when they match the domain.
 - **Tailwind Grid Alignment**: Arrange form fields in grid structures (`grid grid-cols-1 md:grid-cols-2 gap-4`) for spacious layouts.
 - **Button Styling**: Always set `type="button"` on the Cancel button to prevent it from accidentally submitting the HTML form. Set `type="submit"` on the primary save action.
+
+---
+
+## 4. Edit Form Initialization
+
+For an edit form, accept a typed input value and hydrate the form once the value exists. Use `setValue` when the incoming model is complete and `patchValue` only for intentionally partial objects.
+
+```typescript
+user = input<UserFormValue | null>(null);
+
+constructor() {
+  effect(() => {
+    const user = this.user();
+    if (user) {
+      this.formGroup.setValue(user);
+    }
+  });
+}
+```
+
+---
+
+## 5. Anti-Patterns
+
+- Do not emit values when the form is invalid.
+- Do not read `formGroup.value` for non-nullable forms; use `getRawValue()`.
+- Do not show validation errors before a field is touched, dirty, or after submit validation marks fields as touched.
+- Do not put DTO conversion logic in the form component.
+- Do not rely only on placeholder text as a label.
+
+## 6. Final Checklist
+
+- `ReactiveFormsModule` is in `imports`.
+- Form is built with `NonNullableFormBuilder`.
+- Submit and cancel are exposed with `output<T>()`.
+- Submit marks invalid forms as touched and returns early.
+- Material fields have labels and specific error messages.
