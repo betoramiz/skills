@@ -1,8 +1,10 @@
 # Agent Instructions
 
-Use `.ai/skills/` as the source of truth for project conventions.
+Use `.ai/skills/` as the shared project convention source.
+Use `.ai/skills/angular/` as project-local context for the Angular skills.
+Use `.ai/skills/dotnet/` as project-local context for the .NET skills (currently empty).
 
-Before editing Angular code, read the relevant skill:
+For Angular work, read the relevant `SKILL.md` files in `.ai/skills/angular` before implementing changes. Prefer the most specific skill for the task, starting with the architectural foundation:
 
 - `.ai/skills/angular/architecture/SKILL.md` for feature structure, routes, layers, aliases, and layout conventions.
 - `.ai/skills/angular/component/SKILL.md` for standalone components, signal inputs/outputs, template control flow, and component exports.
