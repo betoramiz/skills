@@ -26,6 +26,39 @@ src/app/features/<feature-name>/
 └── <feature-name>.css
 ```
 
+## Layouts Structure
+
+```text
+src/app/layouts/
+└── <layout-name>-layout-component/
+    ├── <layout-name>-layout-component.ts
+    ├── <layout-name>-layout-component.html
+    └── <layout-name>-layout-component.css
+```
+
+- Layouts define page shells and core structures (e.g. `main-layout-component` for side navigation and toolbar, `auth-layout-component`).
+- Layout components should be stand-alone, using **default exports** for layout component classes.
+- Layouts embed `<router-outlet></router-outlet>` to render matched feature page contents.
+
+## Shared Structure
+
+```text
+src/app/shared/
+├── components/
+│   ├── dialgos/          # Global dialog components (e.g., confirmation-component.ts). Note the typo "dialgos".
+│   ├── layout/           # Page structural components (page-header, page-body, page-content).
+│   └── <widget>.ts       # Reusable components like full-spinner.ts or table-menu-component.ts.
+├── directives/           # Global directives.
+├── models/               # Application-wide types and models (e.g., pagination.ts).
+├── pipes/                # Global pipes.
+├── services/             # Infrastructure services (base-service.ts, base-crud-facade.ts, modal-service.ts).
+└── utils/                # Utility helper functions.
+```
+
+- All reusable/global code belongs in the appropriate subfolder under `src/app/shared`.
+- Avoid putting feature-specific logic in `shared`.
+
+
 ## Layer Rules
 
 1. View layer: components bind to signals and delegate actions. They should not perform HTTP calls or complex RxJS orchestration.
