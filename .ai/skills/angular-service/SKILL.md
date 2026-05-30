@@ -49,7 +49,7 @@ export class UserService extends BaseService {
 ## Placement
 
 - Shared infrastructure services live under `src/app/shared/services/`.
-- Feature-specific REST services live under `src/app/dashboard-features/<feature>/`.
+- Feature-specific REST services live under `src/app/features/<feature>/`.
 
 Read [references/service-patterns.md](references/service-patterns.md) when adding custom endpoints, extending `BaseService`, or deciding whether logic belongs in a service or facade.
 

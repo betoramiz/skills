@@ -85,7 +85,7 @@ The application blends **Tailwind CSS v4** and **Angular Material 3 (M3)** using
 
 ## 7. Feature Checklist
 
-- Folder lives under `src/app/dashboard-features/<feature-name>/`.
+- Folder lives under `src/app/features/<feature-name>/`.
 - Routable page files use `<feature-name>.ts/html/css`.
 - Nested UI lives under `components/`.
 - Models and mappers live under `models/`.

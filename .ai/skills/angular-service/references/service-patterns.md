@@ -18,9 +18,9 @@ src/app/shared/services/
 ```
 
 ### B. Feature-Specific Services
-Services that deal specifically with a single feature module are kept under their respective feature directories inside `src/app/dashboard-features/<feature-name>/`.
+Services that deal specifically with a single feature module are kept under their respective feature directories inside `src/app/features/<feature-name>/`.
 ```
-src/app/dashboard-features/forms/
+src/app/features/forms/
 ├── form-service.ts          # Feature-specific REST service
 ├── components/
 └── forms.ts
