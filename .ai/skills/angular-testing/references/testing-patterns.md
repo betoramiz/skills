@@ -5,6 +5,7 @@
 ```typescript
 await TestBed.configureTestingModule({
   imports: [UserFormComponent],
+  providers: [provideZonelessChangeDetection()],  // match production config
 }).compileComponents();
 
 const fixture = TestBed.createComponent(UserFormComponent);
@@ -38,7 +39,39 @@ Use HTTP testing utilities to verify:
 - Request method and payload.
 - Error path is surfaced to the subscriber.
 
-## 5. Anti-Patterns
+## 5. Resolver Coverage
+
+Resolvers are plain `ResolveFn<T>` functions. Test them directly using `TestBed.runInInjectionContext()`:
+
+```typescript
+import { TestBed } from '@angular/core/testing';
+import { ActivatedRouteSnapshot, RouterStateSnapshot, convertToParamMap } from '@angular/router';
+import { of } from 'rxjs';
+import { getAllProjectsResolver } from './get-all-projects.resolver';
+
+it('returns projects from the service', () => {
+  const fakeProjects = [{ id: 1, name: 'Test' }];
+  const mockService = { getListOf: () => of(fakeProjects) };
+
+  TestBed.configureTestingModule({
+    providers: [
+      provideZonelessChangeDetection(),
+      { provide: ProjectService, useValue: mockService },
+    ],
+  });
+
+  const fakeRoute = { paramMap: convertToParamMap({}) } as ActivatedRouteSnapshot;
+  const result = TestBed.runInInjectionContext(() =>
+    getAllProjectsResolver(fakeRoute, {} as RouterStateSnapshot)
+  );
+
+  expect(result).toBeDefined();
+});
+```
+
+For optional-param resolvers, also assert that `undefined` is returned when the param is absent.
+
+## 6. Anti-Patterns
 
 - Do not test private helpers directly.
 - Do not assert implementation-only signal names when a user-facing DOM assertion is clearer.
@@ -46,7 +79,7 @@ Use HTTP testing utilities to verify:
 - Do not use real network calls.
 - Do not add broad brittle snapshots for Angular Material DOM.
 
-## 6. Final Checklist
+## 7. Final Checklist
 
 - Tests compile with standalone imports.
 - Async observables are flushed or completed.

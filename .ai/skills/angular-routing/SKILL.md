@@ -17,6 +17,7 @@ Use this project's route style instead of generic Angular CLI scaffolding.
 - Keep route paths kebab-case and aligned with feature folder names.
 - Use relative imports for feature pages and sub-routes inside `features`.
 - Add redirects only when the desired default page is explicit.
+- Use `resolve: { key: resolverFn }` when a page requires data before rendering. Define resolvers as `ResolveFn<T>` functions in `features/<feature>/resolvers/`.
 
 ```typescript
 import { Routes } from '@angular/router';
@@ -40,4 +41,18 @@ export const routes: Routes = [
 ];
 ```
 
-Read [references/routing-patterns.md](references/routing-patterns.md) before adding a new routed feature or changing layout-level route behavior.
+```typescript
+// features/project/resolvers/get-all-projects.resolver.ts
+export const getAllProjectsResolver: ResolveFn<ProjectListItemDto[]> = (route, state) => {
+  return inject(ProjectService).getListOf<ProjectListItemDto>('');
+};
+
+// In routes.ts — attach the resolver:
+{
+  path: '',
+  loadComponent: () => import('./list/list.component'),
+  resolve: { projects: getAllProjectsResolver }
+}
+```
+
+Read [references/routing-patterns.md](references/routing-patterns.md) before adding a new routed feature, adding resolvers, or changing layout-level route behavior.

@@ -10,7 +10,7 @@ To keep the workspace clean and modular, the codebase follows specific naming an
 Unlike the standard Angular CLI convention of suffixing files with `.component` (e.g., `modal.component.ts`), this repository omits the `.component` suffix for feature and layout components.
 - **Page & Feature Components**: `<name>.ts`, `<name>.html`, `<name>.css` (e.g., `forms.ts`, `forms.html`, `forms.css`)
 - **Layout Components**: `<name>-component.ts` (e.g., `main-layout-component.ts`)
-- **Shared Dialogs**: `<name>-component.ts` (e.g., `confirmation-component.ts` under `@shared/components/dialgos/`)
+- **Shared Dialogs**: `<name>-component.ts` (e.g., `confirmation-component.ts` under `@shared-component/dialgos/`)
 
 ### Feature Directories
 Feature components are organized under `src/app/features/` inside their own directories. If a component uses child/nested components, they are placed in a sub-folder named `components/`.
@@ -129,6 +129,25 @@ this.backendDto.set(newData);
 // Derived computed state
 hasData = computed(() => this.backendDto() !== null);
 ```
+
+### Read-Only Signal Exposure
+Expose facade signals to templates using `.asReadonly()` to prevent template-side mutation:
+```typescript
+protected readonly entries = this.facade.entryList.asReadonly();
+protected readonly status  = this.facade.actionStatus.asReadonly();
+```
+Never expose the writable facade signal directly to the template.
+
+### Signal-Based ViewChild
+Use `viewChild()` or `viewChild.required()` instead of the `@ViewChild()` decorator:
+```typescript
+import { viewChild } from '@angular/core';
+import { FormGroupDirective } from '@angular/forms';
+
+protected readonly ngForm = viewChild.required<FormGroupDirective>('ngForm');
+```
+The result is a signal — call it to read: `this.ngForm().resetForm()`  
+`viewChild.required()` throws at initialization if the ref is absent, catching template config errors early.
 
 ### Modern Component Inputs as Signals
 Always use Signal Inputs instead of the old `@Input()` decorator.
@@ -251,7 +270,7 @@ export function fromFormToCreateDto(projectId: number, data: TimesheetFormValue)
 ## 5. Shared Services & Infrastructure
 
 ### BaseService for HTTP REST Calls
-Any service that performs HTTP operations should inherit from `BaseService` (located in `@shared/services/base-service.ts`) which encapsulates standard CRUD endpoints.
+Any service that performs HTTP operations should inherit from `BaseService` (located in `@shared-services/base-service.ts`) which encapsulates standard CRUD endpoints.
 - **Injecting Base HttpClient**: Even though `BaseService` is an inheritance-based class, it resolves `HttpClient` via `inject()` property assignment:
   ```typescript
   protected httpClient: HttpClient = inject(HttpClient);
@@ -261,24 +280,30 @@ Any service that performs HTTP operations should inherit from `BaseService` (loc
   - The endpoint is configured via the constructor: `super('my-endpoint')`.
 
 ### Centralized Modal Service
-Interact with dialogs via `ModalService` (`@shared/services/modal-service.ts`).
-- **Gotcha**: Note that the shared dialogs directory has a small folder naming typo: `@shared/components/dialgos` (spelled `dialgos` instead of `dialogs`). All shared confirmation, error, and yes/no components are stored there.
+Interact with dialogs via `ModalService` (`@shared-services/modal-service.ts`).
+- **Gotcha**: Note that the shared dialogs directory has a small folder naming typo: `@shared-component/dialgos` (spelled `dialgos` instead of `dialogs`). All shared confirmation, error, and yes/no components are stored there.
 
 ---
 
 ## 6. Styling, Path Mappings, and UI Design
 
 - **Tailwind CSS v4**: Built-in styling uses Tailwind CSS v4. Standard utility classes (`flex`, `gap-5`, `text-xl`, etc.) are heavily leveraged in templates.
-- **Path Aliasing**: Always import shared code using the `@shared` alias to prevent deep relative path nesting:
+- **Path Aliasing**: Always import shared code using the four granular aliases defined in `tsconfig.json`:
   ```typescript
-  import { PageBody } from '@shared/components/layout';
+  import { PageBody } from '@shared-component/layout';
+  import { ModalService } from '@shared-services/modal-service';
+  import { Pagination } from '@shared-model/pagination';
   ```
   Defined in `tsconfig.json` as:
   ```json
   "paths": {
-    "@shared/*": ["src/app/shared/*"]
+    "@shared-component/*": ["./src/app/shared/components/*"],
+    "@shared-directives/*": ["./src/app/shared/directives/*"],
+    "@shared-model/*":      ["./src/app/shared/models/*"],
+    "@shared-services/*":   ["./src/app/shared/services/*"]
   }
   ```
+  Note: `component` and `model` are singular; `services` and `directives` are plural.
 - **Aesthetic Guidelines**: Custom designs must look premium, modern, and aligned with standard layout utilities (`<page-content>`, `<page-header>`, `<page-body>`). Use curated colors (such as Angular Material tokens and HSL palettes) instead of default browser styles.
 
 ---
@@ -287,7 +312,7 @@ Interact with dialogs via `ModalService` (`@shared/services/modal-service.ts`).
 
 - Do not use constructor parameter injection for new code.
 - Do not use `@Input()`, `@Output()`, or `EventEmitter` for new components.
-- Do not import shared code through deep relative paths; use `@shared/...`.
+- Do not import shared code through deep relative paths; use the four granular `@shared-*` aliases.
 - Do not put HTTP calls or multi-step RxJS orchestration directly in components.
 - Do not target generated Angular Material DOM classes from component CSS.
 
@@ -296,5 +321,5 @@ Interact with dialogs via `ModalService` (`@shared/services/modal-service.ts`).
 - Component is standalone and all template dependencies are listed in `imports`.
 - Feature pages use default exports; nested components use named exports.
 - Templates use `@if`, `@for`, and `@switch`.
-- Shared imports use `@shared/...`; same-feature imports are relative.
+- Shared imports use the four granular `@shared-*` aliases; same-feature imports are relative.
 - Layout remains responsive on mobile and desktop widths.

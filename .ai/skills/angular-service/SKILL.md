@@ -12,7 +12,7 @@ Services are stateless data or infrastructure wrappers. Keep subscriptions out o
 - Decorate app-wide and feature data services with `@Injectable({ providedIn: 'root' })`.
 - Use functional `inject()` for dependencies.
 - Return `Observable<T>` from service methods; let facades or components subscribe.
-- Any REST service should extend `BaseService` from `@shared/services/base-service`.
+- Any REST service should extend `BaseService` from `@shared-services/base-service`.
 - Configure the endpoint by calling `super('<endpoint>')` in the constructor.
 - Use `this.buildUrl(endpointName?, id?)` to construct consistent sub-endpoints and API paths instead of manually concatenating paths.
 - Add `catchError(this.handleError)` for custom HTTP calls that bypass inherited CRUD helpers.
@@ -20,7 +20,7 @@ Services are stateless data or infrastructure wrappers. Keep subscriptions out o
 ```typescript
 import { Injectable } from '@angular/core';
 import { Observable, catchError } from 'rxjs';
-import { BaseService } from '@shared/services/base-service';
+import { BaseService } from '@shared-services/base-service';
 import { UserDto } from './models/user-models';
 
 @Injectable({

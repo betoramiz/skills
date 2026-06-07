@@ -28,7 +28,7 @@ Below is the established blueprint pattern for a modern state-managing feature F
 
 ```typescript
 import { inject, Injectable, signal } from '@angular/core';
-import { BaseCrudFacade } from '@shared/services/base-crud-facade';
+import { BaseCrudFacade } from '@shared-services/base-crud-facade';
 import { FormService } from './form-service';
 import { switchMap } from 'rxjs';
 
@@ -48,7 +48,12 @@ export class FormFacade extends BaseCrudFacade {
     );
   }
 
-  // 4. Command pipeline orchestration with automatic state handling
+  // 4. Setter for resolver-provided data (no runQuery needed)
+  setAllItems(items: string[]): void {
+    this.items.set(items);
+  }
+
+  // 5. Command pipeline orchestration with automatic state handling
   createItem(name: string, email: string): void {
     const pipeline$ = this.service
       .create<{ name: string; email: string }, any>({ name, email })
@@ -79,68 +84,84 @@ Inherited `create`, `update`, and `delete` return observables instead of subscri
 When using the Facade inside a Component:
 1. Include the Facade in the component's `providers` array.
 2. Inject it using `inject()`.
-3. Bind the template or effects directly to the facade's state and data signals.
+3. Expose facade signals to templates with `.asReadonly()` to prevent template-side mutation.
+4. Use `effect()` to handle both error **and** success status branches.
 
 ```typescript
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { FormFacade } from './form-facade';
-import { ModalService } from '@shared/services/modal-service';
+import { ModalService } from '@shared-services/modal-service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-forms-page',
-  providers: [FormFacade], // Tied to this component's lifecycle
-  template: `
-    @if (facade.actionStatus() === 'loading') {
-      <mat-spinner></mat-spinner>
-    }
-
-    @if (facade.errorMessage()) {
-      <div class="error">{{ facade.errorMessage() }}</div>
-    }
-
-    <button (click)="facade.createItem('Alice', 'alice@email.com')">Add User</button>
-
-    <ul>
-      @for (item of facade.items(); track item) {
-        <li>{{ item }}</li>
-      }
-    </ul>
-  `
+  providers: [FormFacade],
+  templateUrl: './forms-page.html',
+  styleUrl: './forms-page.css',
 })
-export default class FormsPage implements OnInit {
+export default class FormsPage {
   protected readonly facade = inject(FormFacade);
   private readonly modalService = inject(ModalService);
+  private readonly router = inject(Router);
+
+  // Expose signals as read-only — templates cannot mutate them
+  protected readonly items  = this.facade.items.asReadonly();
+  protected readonly status = this.facade.actionStatus.asReadonly();
 
   constructor() {
-    // Standard effect for global/modal notifications on errors
+    // Handle both error and success branches
     effect(() => {
-      if (this.facade.actionStatus() === 'error') {
+      if (this.status() === 'error') {
         this.modalService.showErrorModal(this.facade.errorMessage());
-        this.facade.clearStatus(); // Clean up state after displaying
+        this.facade.clearStatus();
+      } else if (this.status() === 'success') {
+        this.router.navigate(['/target-path']);
+        this.facade.clearStatus();
       }
     });
-  }
-
-  ngOnInit() {
-    this.facade.getAllItems();
   }
 }
 ```
 
 ---
 
-## 4. Anti-Patterns
+## 4. Resolver Data Hydration
+
+When a route resolver preloads data, the page component receives it synchronously and passes it to the facade via a setter method. No `runQuery` call is needed for the initial load — the resolver already made the HTTP request.
+
+### Facade setter
+```typescript
+setAllProjects(projects: ProjectListItemDto[]): void {
+  this.projects.set(projects);
+}
+```
+
+### Page component constructor
+```typescript
+constructor() {
+  const data = inject(ActivatedRoute).snapshot.data['projects'] as ProjectListItemDto[] || [];
+  this.facade.setAllProjects(data);
+}
+```
+
+For user-triggered refreshes after a create or update, use `runQuery()` separately (e.g. `createAndRefresh()` pattern with `switchMap`).
+
+---
+
+## 5. Anti-Patterns
 
 - Do not add `providedIn: 'root'` to feature facades.
 - Do not subscribe in components when the facade can expose a `runQuery` method instead.
 - Do not duplicate loading/error signals in feature facades unless the feature has multiple independent async regions.
 - Do not put URL construction or raw `HttpClient` calls in facades.
 - Do not leave subscriptions from returned CRUD observables without cleanup.
+- Do not use `@shared/services/...` — use `@shared-services/...` (the granular alias).
 
-## 5. Final Checklist
+## 6. Final Checklist
 
 - Facade is provided by the owning component.
 - Facade extends `BaseCrudFacade` and assigns `protected readonly service`.
 - Async pipelines use `runQuery` when the facade owns the subscription.
 - Feature data lives in signals.
-- Components bind to facade signals and delegate actions to facade methods.
+- Components bind to facade signals via `.asReadonly()` and delegate actions to facade methods.
+- If the page uses a resolver, the facade has a setter method to receive resolver data.

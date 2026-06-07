@@ -10,11 +10,14 @@ Add focused tests around the changed behavior. Prefer small tests that verify pu
 ## Core Rules
 
 - Use Angular TestBed for standalone components and include the component in `imports`.
+- Configure TestBed with `provideZonelessChangeDetection()` to match the production app config (the app uses no Zone.js).
 - Test signal inputs by setting inputs through the fixture/component API available in the project version.
 - For form components, assert invalid submit behavior, emitted values from `getRawValue()`, and validation error states.
 - For facades, mock the feature service and assert signal state transitions.
 - For REST services, use Angular HTTP testing utilities and assert method, URL, body, and error paths.
 - Keep tests close to the source file unless the project establishes a different convention.
 - Run `npm test` or a narrower available test command after adding tests.
+
+> Note: No tests currently exist in this codebase — the testing skill is aspirational. When adding the first tests, the patterns below provide the starting point.
 
 Read [references/testing-patterns.md](references/testing-patterns.md) before adding tests for services, facades, or forms.

@@ -65,6 +65,44 @@ html {
 
 When changing UI, verify the result in the browser at both desktop and mobile widths.
 
+## Material 3 Button Variants
+
+Angular Material 3 uses an attribute-based API — not directive selectors or `color=""` props.
+
+| Variant    | Attribute            | Import          |
+|------------|----------------------|-----------------|
+| Filled     | `matButton="filled"` | `MatButton`     |
+| Text       | `matButton="text"`   | `MatButton`     |
+| Outlined   | `matButton="outlined"`| `MatButton`    |
+| Icon only  | `matIconButton`      | `MatIconButton` |
+
+```html
+<button matButton="filled" type="submit">Guardar</button>
+<button matButton="text" type="button" (click)="cancel()">Cancelar</button>
+<button matIconButton type="button"><mat-icon>delete</mat-icon></button>
+```
+
+Never use: `mat-flat-button`, `mat-raised-button`, `mat-stroked-button`, `mat-button` (old directive), or `color="primary"`.
+
+## Global Material Config (app.config.ts)
+
+`MAT_FORM_FIELD_DEFAULT_OPTIONS` sets `appearance: 'outline'` for all form fields project-wide.
+Do not set `appearance=""` on individual `<mat-form-field>` elements.
+
+For datepickers, provide the adapter at the **page component** level (not `app.config.ts` and not the form component):
+
+```typescript
+@Component({
+  providers: [
+    provideNativeDateAdapter(),
+    { provide: MAT_DATE_LOCALE, useValue: 'es-MX' },
+  ],
+})
+export default class FeaturePage { ... }
+```
+
+`MAT_DATE_LOCALE` is **not** set globally — only in the page component that hosts a datepicker form.
+
 ## Anti-Patterns
 
 - Do not style generated `.mat-mdc-*` internals from component CSS.

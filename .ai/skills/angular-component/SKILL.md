@@ -13,9 +13,10 @@ Follow the project's standalone Angular style. Prefer the local conventions over
 - Use functional `inject()` for dependencies instead of constructor injection.
 - Use signal-based `input()` and `output()` instead of `@Input()`, `@Output()`, and `EventEmitter`.
 - Use native template control flow: `@if`, `@for`, `@switch`; avoid `*ngIf`, `*ngFor`, and `*ngSwitch`.
-- Use `@shared/...` for shared imports; use relative imports within the same feature.
-- Use inline `template` and `styles` for small components, wrappers, simple dialogs, and compact UI controls.
-- Use separate `.html` and `.css` files when a component has substantial markup, complex styling, or is a routable feature page.
+- Use the four granular aliases (`@shared-component/*`, `@shared-services/*`, `@shared-model/*`, `@shared-directives/*`) for shared imports; use relative imports within the same feature.
+- Use separate `templateUrl` and `styleUrl` files for all feature components under `features/` and `components/`. Reserve inline `template`/`styles` for micro-components in `shared/components/layout/` (PageHeader, PageBody) or one-element dialog shells.
+- Expose facade signals to templates with `.asReadonly()`: `protected entries = this.facade.entryList.asReadonly();`. Never expose writable signals to templates.
+- Use `viewChild.required<T>('ref')` for template element or directive references instead of `@ViewChild()`. It returns a signal — call it to read: `this.ngForm()`. Use non-required `viewChild<T>()` when the element may be absent.
 
 ## File and Export Conventions
 
@@ -34,7 +35,7 @@ import { MatButton } from '@angular/material/button';
     @if (visible()) {
       <section class="flex items-center justify-between gap-4">
         <h2>{{ title() }}</h2>
-        <button mat-flat-button type="button" (click)="confirmed.emit()">
+        <button matButton="filled" type="button" (click)="confirmed.emit()">
           {{ actionLabel() }}
         </button>
       </section>

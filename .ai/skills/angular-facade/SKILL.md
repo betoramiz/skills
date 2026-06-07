@@ -10,17 +10,19 @@ Facades are feature-local state controllers between components and REST services
 ## Core Rules
 
 - Decorate facades with `@Injectable()` only; do not use `providedIn: 'root'`.
-- Extend the reusable `BaseCrudFacade` from `@shared/services/base-crud-facade` to automatically inherit `actionStatus` and `errorMessage` signals.
+- Extend the reusable `BaseCrudFacade` from `@shared-services/base-crud-facade` to automatically inherit `actionStatus` and `errorMessage` signals.
 - Provide the facade in the owning component's `providers` array.
 - Inject the feature service and assign it to the required `protected readonly service` property.
 - Use `this.runQuery(observable$, (data) => ...)` to execute query and command pipelines. This automatically sets `actionStatus` ('loading', 'success', 'error'), handles error propagation, and cleans up subscriptions using `takeUntilDestroyed`.
 - If using inherited `create`, `update`, or `delete` methods directly, return the observable to the caller and ensure the caller owns subscription cleanup.
 - Use signals for additional feature-specific UI state such as lists, selected items, filters, and pagination.
 - Keep service classes stateless and let the facade coordinate multi-step flows.
+- When a route resolver preloads data, receive it via `inject(ActivatedRoute).snapshot.data['key']` in the component constructor and pass it to a facade setter method. No `runQuery` needed for resolver-provided data.
+- Use `effect()` for both error and success status branches: show modal on error, navigate on success, call `facade.clearStatus()` in both.
 
 ```typescript
 import { Injectable, inject, signal } from '@angular/core';
-import { BaseCrudFacade } from '@shared/services/base-crud-facade';
+import { BaseCrudFacade } from '@shared-services/base-crud-facade';
 import { UserService } from './user-service';
 import { UserDto, UserFormValue } from './models/user-models';
 import { switchMap } from 'rxjs';

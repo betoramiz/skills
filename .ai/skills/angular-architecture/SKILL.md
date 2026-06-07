@@ -19,8 +19,11 @@ src/app/features/<feature-name>/
 ├── models/
 │   ├── <feature-name>-models.ts
 │   └── mappers.ts
+├── resolvers/
+│   └── <resolver-name>.resolver.ts
 ├── <feature-name>-service.ts
 ├── <feature-name>-facade.ts
+├── routes.ts
 ├── <feature-name>.ts
 ├── <feature-name>.html
 └── <feature-name>.css
@@ -64,6 +67,15 @@ src/app/shared/
 1. View layer: components bind to signals and delegate actions. They should not perform HTTP calls or complex RxJS orchestration.
 2. Facade layer: feature-local controller extending `BaseCrudFacade` that inherits unified UI state signals (`actionStatus`, `errorMessage`) and uses query runners (`runQuery`) to orchestrate async pipelines and handle auto-unsubscription on destruction.
 3. Data REST layer: stateless service extending `BaseService`, returning typed observables.
+4. Resolver layer: `ResolveFn<T>` functions in `resolvers/`. Call the feature service directly via `inject()` and return the observable. No facade access, no subscription. Data is passed to the facade via a setter in the component constructor.
+
+
+## Application Bootstrap Configuration
+
+The app uses `provideZonelessChangeDetection()` — no Zone.js is present.
+- Do not call `changeDetectorRef.markForCheck()` or `detectChanges()` in new code.
+- Signal reads and computed/effect chains update views automatically.
+- `MAT_FORM_FIELD_DEFAULT_OPTIONS` sets `appearance: 'outline'` for all form fields globally (configured in `app.config.ts`). Do not override per-component.
 
 
 ## Naming and Imports
@@ -72,7 +84,7 @@ src/app/shared/
 - Nested components use named exports.
 - Feature pages omit the `.component` suffix.
 - Shared dialogs and layout components keep the existing `<name>-component.ts` convention.
-- Shared imports use `@shared/...`.
+- Shared imports use the four granular aliases: `@shared-component/*`, `@shared-services/*`, `@shared-model/*`, `@shared-directives/*`.
 - Imports inside the same feature use relative paths.
 - The shared dialogs folder is currently spelled `dialgos`; preserve that path unless explicitly fixing the project-wide typo.
 
@@ -101,6 +113,7 @@ src/app/shared/
 - Page component is routable and default-exported.
 - Feature service extends `BaseService`.
 - Feature facade extends `BaseCrudFacade` and is provided by the page component.
-- Shared imports use `@shared/...`.
+- Shared imports use the four granular `@shared-*` aliases.
+- If data is preloaded, a resolver is registered in `routes.ts` and consumes only the feature service.
 
 Read [references/architecture-patterns.md](references/architecture-patterns.md) before scaffolding a new feature or changing project structure.

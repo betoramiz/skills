@@ -9,13 +9,15 @@ This document details the architectural design patterns, conventions, and practi
 Services are organized based on their scope of usage:
 
 ### A. Shared / Infrastructure Services
-Common services used across multiple features (e.g. authentication, theme-switching, global notifications, modal dialog trigger services) are located under `@shared/services/`.
+Common services used across multiple features (e.g. authentication, theme-switching, global notifications, modal dialog trigger services) are located under `src/app/shared/services/`. Import them via `@shared-services/...`.
 ```
 src/app/shared/services/
 ├── base-service.ts
 ├── modal-service.ts
 └── theme.service.ts
 ```
+
+> Import these via `@shared-services/...` (e.g. `import { ModalService } from '@shared-services/modal-service'`).
 
 ### B. Feature-Specific Services
 Services that deal specifically with a single feature module are kept under their respective feature directories inside `src/app/features/<feature-name>/`.
@@ -57,7 +59,7 @@ loadUsers() {
 
 ```typescript
 import { Injectable } from '@angular/core';
-import { BaseService } from '@shared/services/base-service';
+import { BaseService } from '@shared-services/base-service';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -84,7 +86,23 @@ export class UserService extends BaseService {
 
 ---
 
-## 4. RxJS Best Practices in Services
+## 4. Paginated Queries
+
+`BaseService` also exposes `getPaginatedResults()` for endpoints that support pagination:
+
+```typescript
+import { Pagination } from '@shared-model/pagination';
+
+getPaged(pagination: Pagination): Observable<PaginationResponse<ItemDto>> {
+  return this.getPaginatedResults<ItemDto>(pagination);
+}
+```
+
+`Pagination` wraps `page`/`pageSize` state and produces `HttpParams` via `.getHttpParameters()`.
+
+---
+
+## 5. RxJS Best Practices in Services
 
 - **Keep Subscriptions Out of Services**: Services should return `Observable<T>` streams. Never call `.subscribe()` inside the service itself unless you are doing local state buffering/caching. Let facades or components subscribe to the returned Observables.
 - **Error Handling**: Standard REST errors are globally captured by the inherited `catchError(this.handleError)` handler in `BaseService`. If you write custom fetch/patch/post methods, always add `catchError(this.handleError)` to ensure error tracking and formatting:
@@ -101,7 +119,7 @@ customCall() {
 
 ---
 
-## 5. Anti-Patterns
+## 6. Anti-Patterns
 
 - Do not call `.subscribe()` inside feature REST services.
 - Do not store feature UI state in REST services.
@@ -109,7 +127,13 @@ customCall() {
 - Do not bypass inherited CRUD helpers unless the endpoint shape requires a custom request.
 - Do not swallow errors in services; return the failed observable through `catchError(this.handleError)`.
 
-## 6. Final Checklist
+## 7. File Naming Convention
+
+The convention for feature services is `<feature>-service.ts` — **no** `.service.` infix:
+- `timesheet-service.ts` ← correct pattern
+- `project.service.ts` ← legacy artifact; do not copy this style for new services
+
+## 8. Final Checklist
 
 - Service extends `BaseService` when it performs HTTP calls.
 - Service is decorated with `@Injectable({ providedIn: 'root' })`.
