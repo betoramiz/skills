@@ -26,4 +26,14 @@ When working on the .NET 10 Clean Architecture backend, the agent MUST read the 
 - `.ai/skills/dotnet-data-access/SKILL.md` for CQRS hybrid data access conventions (EF Core for mutations; Dapper for high-performance read-only queries), PostgreSQL driver, and postgres-specific features.
 - `.ai/skills/dotnet-testing-guide/SKILL.md` for backend test writing, using xUnit, FluentAssertions, Mocking (Moq/NSubstitute), and mandatory Integration Testing with Testcontainers.
 
+### Bun + Hono Backend Skills
+When working on the backend, the agent MUST read the relevant `SKILL.md` file before implementing changes.
+- `.ai/skills/ts-architecture/SKILL.md` for feature module structure, layer responsibilities, Hono wiring, Drizzle/Postgres persistence, path aliases, and cross-layer conventions.
+- `.ai/skills/ts-routing/SKILL.md` for Hono route factories, middleware (auth, logging), Zod validation with `zValidator`, and HTTP response formatting.
+- `.ai/skills/ts-usecases/SKILL.md` for use case implementation, `Result`-based success/failure flows, command DTOs, domain entity orchestration, and query dependency injection.
+- `.ai/skills/ts-testing/SKILL.md` for unit tests (entities, use cases), Hono route integration tests, and database integration tests using Vitest.
+- `.ai/skills/quick-api/SKILL.md` for a step-by-step checklist when scaffolding a complete new API feature from schema to mounted routes.
+- `.ai/skills/db-migrations/SKILL.md` for Drizzle schema definitions, migration generation and application, seeding, and advanced query patterns (joins, transactions).
+
 If the environment supports native skills, prefer invoking the matching `$angular-*` or `$dotnet-*` skill name. If not, treat the `SKILL.md` files above as required project context.
+
