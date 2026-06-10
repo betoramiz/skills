@@ -18,6 +18,7 @@ src/app/features/<feature-name>/
 │       └── <inner-component>.css
 ├── models/
 │   ├── <feature-name>-models.ts
+│   ├── <feature-name>-dtos.ts
 │   └── mappers.ts
 ├── resolvers/
 │   └── <resolver-name>.resolver.ts
@@ -28,6 +29,16 @@ src/app/features/<feature-name>/
 ├── <feature-name>.html
 └── <feature-name>.css
 ```
+
+### `<feature-name>-dtos.ts`
+
+Mirrors the exact shape of API request and response payloads. Services and facades import from this file — never from `<feature-name>-models.ts` — when talking to the API.
+
+- Name response shapes as `<Entity><Operation>Dto` (e.g., `CardListDto`, `CardAddEditDto`).
+- Derive request types via `Omit` / `Pick` / intersection from the base DTO rather than duplicating fields (e.g., `addCardRequest`, `editCardRequest`).
+- Name request types as `<operation><Entity>Request` in camelCase (e.g., `addCardRequest`, `editCardRequest`).
+- If the file grows large, split by operation: `<feature>-create-dto.ts`, `<feature>-edit-dto.ts`, etc.
+- Do **not** put UI-specific state or Angular form values here; those belong in `<feature-name>-models.ts`.
 
 ## Layouts Structure
 
@@ -115,5 +126,6 @@ The app uses `provideZonelessChangeDetection()` — no Zone.js is present.
 - Feature facade extends `BaseCrudFacade` and is provided by the page component.
 - Shared imports use the four granular `@shared-*` aliases.
 - If data is preloaded, a resolver is registered in `routes.ts` and consumes only the feature service.
+- API request/response shapes are defined in `models/<feature-name>-dtos.ts`; services and facades import DTO types from there.
 
 Read [references/architecture-patterns.md](references/architecture-patterns.md) before scaffolding a new feature or changing project structure.

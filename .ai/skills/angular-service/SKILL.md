@@ -13,6 +13,7 @@ Services are stateless data or infrastructure wrappers. Keep subscriptions out o
 - Use functional `inject()` for dependencies.
 - Return `Observable<T>` from service methods; let facades or components subscribe.
 - Any REST service should extend `BaseService` from `@shared-services/base-service`.
+- Use DTO types (from `models/<feature>-dtos.ts`) as the generic type parameter for all `BaseService` calls (`getListOf<T>`, `create<T>`, etc.). Never use UI model types or `any` for API payloads.
 - Configure the endpoint by calling `super('<endpoint>')` in the constructor.
 - Use `this.buildUrl(endpointName?, id?)` to construct consistent sub-endpoints and API paths instead of manually concatenating paths.
 - Add `catchError(this.handleError)` for custom HTTP calls that bypass inherited CRUD helpers.
@@ -21,7 +22,7 @@ Services are stateless data or infrastructure wrappers. Keep subscriptions out o
 import { Injectable } from '@angular/core';
 import { Observable, catchError } from 'rxjs';
 import { BaseService } from '@shared-services/base-service';
-import { UserDto } from './models/user-models';
+import { UserListDto, CreateUserRequest } from './models/user-dtos';
 
 @Injectable({
   providedIn: 'root',
@@ -31,9 +32,9 @@ export class UserService extends BaseService {
     super('users');
   }
 
-  getActiveUsers(): Observable<UserDto[]> {
+  getActiveUsers(): Observable<UserListDto[]> {
     // Hits: ${this.baseUrl}/active
-    return this.getListOf<UserDto>('active');
+    return this.getListOf<UserListDto>('active');
   }
 
   updateStatus(id: string, active: boolean): Observable<void> {

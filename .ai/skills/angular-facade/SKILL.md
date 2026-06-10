@@ -19,12 +19,14 @@ Facades are feature-local state controllers between components and REST services
 - Keep service classes stateless and let the facade coordinate multi-step flows.
 - When a route resolver preloads data, receive it via `inject(ActivatedRoute).snapshot.data['key']` in the component constructor and pass it to a facade setter method. No `runQuery` needed for resolver-provided data.
 - Use `effect()` for both error and success status branches: show modal on error, navigate on success, call `facade.clearStatus()` in both.
+- Signals that hold API-sourced data must use DTO types (from `models/<feature>-dtos.ts`), not UI model types. UI model types (from `<feature>-models.ts`) are for form values and component-local state only.
 
 ```typescript
 import { Injectable, inject, signal } from '@angular/core';
 import { BaseCrudFacade } from '@shared-services/base-crud-facade';
 import { UserService } from './user-service';
-import { UserDto, UserFormValue } from './models/user-models';
+import { UserListDto } from './models/user-dtos';
+import { UserFormValue } from './models/user-models';
 import { switchMap } from 'rxjs';
 
 @Injectable()
@@ -32,8 +34,8 @@ export class UserFacade extends BaseCrudFacade {
   // Required implementation of abstract service property
   protected readonly service = inject(UserService);
 
-  // Additional feature-specific UI state
-  users = signal<UserDto[]>([]);
+  // Additional feature-specific UI state — use DTO type for API-sourced lists
+  users = signal<UserListDto[]>([]);
 
   loadUsers(): void {
     this.runQuery(
@@ -44,7 +46,7 @@ export class UserFacade extends BaseCrudFacade {
 
   createUser(value: UserFormValue): void {
     const createAndRefresh$ = this.service
-      .create<UserDto, UserFormValue>(value)
+      .create<UserListDto, UserFormValue>(value)
       .pipe(
         switchMap(() => this.service.getActiveUsers())
       );
