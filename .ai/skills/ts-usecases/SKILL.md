@@ -13,7 +13,7 @@ Use this skill when implementing application behavior inside `src/features/<feat
 
 1. Inspect the feature entity, schemas, queries, routes, and existing use cases before editing.
 2. Define the input command in `<feature>.schemas.ts` when it comes from HTTP input.
-3. Define the output interface near the use case when it is specific to that operation.
+3. Define the output interface in `<feature>.dtos.ts` and import it from there. Never declare response interfaces inline inside a use case file.
 4. Inject query factories through the constructor using the feature query type, such as `UserQueries`.
 5. Keep Hono, route contexts, and HTTP response formatting out of use cases.
 6. Return `ok(value)` for successful operations that use `Result`.
@@ -22,11 +22,34 @@ Use this skill when implementing application behavior inside `src/features/<feat
 
 ## Patterns
 
-- Create operations usually call an entity factory, check `result.ok`, persist through queries, and return primitives.
+- Create operations call the entity static factory (`Entity.create(...)`), check `result.ok`, persist via queries, and return a DTO (e.g. `{ idCreated }`).
 - Read-by-id operations query by identifier, return a feature-specific not-found helper when missing, and map domain objects to response DTOs.
 - List operations may return direct projections if the route is intentionally direct; prefer `Result` when the route uses `respond`.
 - Domain validation belongs in the entity when it protects invariants.
 - Request shape validation belongs in Zod schemas and route validators.
+
+## Domain Entity Convention
+
+Entities use a **private constructor + static factory** pattern. The class itself is the type — no separate `Props` interface:
+
+```ts
+export class Card {
+  private constructor(
+    public readonly name: string,
+    public readonly bank: string,
+    public readonly billingCutoffDay: number,
+    public readonly lastPaymentDate: string,
+  ) {}
+
+  static create(name: string, bank: string, billingCutoffDay: number, lastPaymentDate: string): Result<Card, ErrorResponse> {
+    if (!name.length) return fail(AppError.BadRequest('Nombre es requerido'));
+    // ... other validations
+    return ok(new Card(name, bank, billingCutoffDay, lastPaymentDate));
+  }
+}
+```
+
+Use cases receive `card.value` (a `Card` instance) and pass it directly to query factories.
 
 ## References
 

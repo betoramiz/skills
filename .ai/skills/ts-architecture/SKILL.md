@@ -15,6 +15,7 @@ Use this skill to preserve the architecture of `web-api` while changing or exten
 2. Keep feature code grouped by module:
    - `<feature>.routes.ts` for Hono adapters.
    - `<feature>.schemas.ts` for Zod request validation and command types.
+   - `<feature>.dtos.ts` for HTTP response interfaces (what the API returns to clients).
    - `<feature>.queries.ts` for Drizzle persistence operations.
    - `<feature>.container.ts` for dependency wiring.
    - `<Entity>.ts` for domain creation, reconstitution, and primitives.
@@ -31,11 +32,19 @@ Use this skill to preserve the architecture of `web-api` while changing or exten
 
 - HTTP routes adapt Hono requests to use cases, run `zValidator`, and call `respond` for `Result` values.
 - Zod schemas define external input shape and export inferred command types.
+- DTOs (`<feature>.dtos.ts`) define the response interfaces returned to clients. Use cases import response types from here — never define response interfaces inline inside use case files.
 - Use cases orchestrate domain objects and query factories; they should not know about Hono contexts.
-- Domain entities enforce invariants through static factories returning `Result`.
-- Query factories receive `Db`, perform Drizzle operations, and convert database rows to domain objects or response projections.
+- Domain entities enforce invariants through static factories returning `Result<Entity, ErrorResponse>`. The entity class is its own type — do not define a separate `Props` interface alongside it.
+- Query factories receive `Db`, perform Drizzle operations, and map rows to DTO projections or accept domain entity instances for persistence.
 - Containers create query factories and use case instances, then pass them to route factories.
 - Shared helpers provide result, response, validation, and error handling primitives.
+
+## Type Boundaries
+
+- **Command types** (`<feature>.schemas.ts`): inferred from Zod — describe what comes *in* via HTTP.
+- **DTO types** (`<feature>.dtos.ts`): plain interfaces — describe what goes *out* via HTTP. Use cases return these wrapped in `Result`.
+- **Domain entity** (`<Entity>.ts`): instantiated class — encapsulates invariants. Query factories accept entity instances; they map to `NewX` Drizzle insert types internally via a private `toInsert` helper.
+- **Drizzle schema types** (`src/db/schemas/`): `$inferSelect` / `$inferInsert` — used only inside query factories, never leaked to use cases or routes.
 
 ## References
 
